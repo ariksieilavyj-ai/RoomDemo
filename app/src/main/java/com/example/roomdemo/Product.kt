@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "products")
 class Product {
+    val quantity: Int = 0
+
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
 

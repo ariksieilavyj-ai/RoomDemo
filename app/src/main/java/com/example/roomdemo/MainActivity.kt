@@ -36,6 +36,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.composed
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,6 +152,91 @@ fun MainScrenn(
     searchResults: List<Product>,
     viewModel: MainViewModel
 ){
+    var productName by remember { mutableStateOf("") }
+    var productQuantity by remember { mutableStateOf("") }
+    var searching by remember { mutableStateOf(false) }
+
+    val onProductTextChange = {
+            text: String -> productName = text
+    }
+
+    val onQuantityTextChange = {
+            text: String -> productQuantity = text
+    }
+
+    CustomTextField(
+        title = "Product Name",
+        textState = productName,
+        onTextChange = onProductTextChange,
+        keyboardType = KeyboardType.Text
+    )
+
+    CustomTextField(
+        title = "Quantity",
+        textState = productQuantity,
+        onTextChange = onQuantityTextChange,
+        keyboardType = KeyboardType.Number
+    )
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ){
+        Button(onClick = {
+            if (productQuantity.isNotEmpty()) {
+                viewModel.insertProduct(
+                    Product(
+                        productName,
+                        productQuantity.toInt()
+                    )
+                )
+                searching = false
+            }
+        }) {
+            Text("Add")
+        }
+
+        Button(onClick = {
+            searching = true
+            viewModel.findProduct(productName)
+        }) {
+            Text("Search")
+        }
+
+        Button(onClick = {
+            searching = false
+            viewModel.deleteProduct(productName)
+        }) {
+            Text("Delete")
+        }
+
+        Button(onClick = {
+            searching = false
+            productName = ""
+            productQuantity = ""
+        }) {
+            Text("Clear")
+        }
+    }
+    LazyColumn(Modifier
+        .fillMaxWidth()
+        .padding(10.dp)
+    ) {
+        val list = if (searching) searchResults else allProducts
+
+        item {
+            TitleRow("ID", "Product", "Quantity")
+        }
+
+        items(list) { product ->
+            ProductRow(id = product.id, name = product.productName,
+                quantity = product.quantity
+            )
+
+        }
+    }
 }
 
 @Preview(showBackground = true)
